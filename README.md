@@ -48,24 +48,130 @@
 
 ## 1️⃣ Robot-based Industrial Safety Management Platform
 
-산업 현장의 안전 관리 업무를 지원하는 **로봇 기반 안전관리 플랫폼**입니다.
+로봇이 수집한 데이터를 기반으로 산업 현장의 안전 상태를 실시간으로 모니터링하고  
+이벤트 대응 및 원격 제어를 수행할 수 있는 **웹 기반 안전 관제 시스템**입니다.
+
+기존의 수기 점검과 사후 보고 중심의 안전 관리 방식에서 벗어나  
+**실시간 데이터 기반 자동화된 안전 관리 환경 구축**을 목표로 개발되었습니다.
+
+---
+
+### 해결하려는 문제
+
+- 현장 안전 점검의 실시간성 부족
+- 수기 보고 기반의 비효율적인 관리 방식
+- 이벤트 발생 이후 대응 지연
+
+---
+
+### 시스템 구조
+
+로봇 (ROS2)
+→ MQTT / HTTP
+→ Spring Boot Backend
+→ PostgreSQL
+→ Next.js Frontend
+
+- 로봇 → 서버 : MQTT 기반 실시간 데이터 전송
+- 서버 → 로봇 : 명령 생성 후 MQTT로 전달
+- 영상 스트리밍 : MJPEG 기반 실시간 모니터링
+
+---
 
 ### 주요 기능
 
-- 로봇 순찰 데이터 기반 위험 요소 탐지
-- PPE(안전 보호구) 착용 여부 영상 분석
-- 가스 센서 기반 위험 감지
-- 웹 대시보드를 통한 안전 관리
-- 순찰 기록 및 조치 로그 관리
-- 안전관리자 업무 자동 설정 및 관리
+#### 1. 로봇 데이터 수집
+
+- 상태 / 위치 / heartbeat / 이벤트 / PPE 로그 수집
+- MQTT 기반 비동기 메시지 처리
+
+#### 2. 실시간 안전 관제
+
+- 이벤트 센터에서 이벤트 조회 및 상태 변경
+- 조치 이력 및 이미지 기반 증적 관리
+
+#### 3. 로봇 제어
+
+- 웹에서 명령 생성 → MQTT로 로봇 전달
+- 원격 제어 및 상태 확인
+
+#### 4. 모니터링 & 대시보드
+
+- 로봇 상태 / 이벤트 / PPE 통계 시각화
+- 10초 주기 실시간 데이터 갱신
+
+#### 5. 영상 스트리밍
+
+- MJPEG 기반 실시간 영상 모니터링
+- Nginx + Backend 프록시 구조
+
+#### 6. 알림 시스템
+
+- 이벤트 발생 / 로봇 오프라인 / 명령 실패 알림
+- 웹에서 즉시 확인 및 이동
+
+---
+
+### 데이터 흐름 (핵심)
+
+로봇 → MQTT → Backend → DB 저장 → 알림 생성 → Front 표시
+
+- 이벤트 발생 시 자동으로
+  → DB 저장 → 알림 생성 → UI 반영까지 이어지는 구조
+
+---
+
+### 기술 스택
+
+- Frontend : Next.js, React, TypeScript
+- Backend : Spring Boot, Spring Security, JPA
+- Database : PostgreSQL
+- Infra : Docker, Docker Compose, Jenkins, Nginx, AWS EC2
+- Communication : MQTT, REST API
+- Streaming : MJPEG (WebRTC → MJPEG 전환)
+
+---
+
+### 트러블슈팅
+
+#### 1. WebRTC → MJPEG 전환
+
+- 문제 : WebRTC는 NAT/방화벽/ICE 문제로 운영 불안정
+- 해결 : MJPEG 기반 단순 HTTP 스트리밍으로 변경
+- 결과 : 배포 안정성 및 디버깅 용이성 향상
+
+#### 2. 스트리밍 연결 끊김 문제
+
+- 원인 : proxy buffering / timeout 설정
+- 해결 :
+  - Nginx buffering off
+  - timeout 증가
+- 결과 : 장시간 스트리밍 안정화
+
+#### 3. 로봇 ↔ 서버 네트워크 문제
+
+- 문제 : 로봇이 사설망 내부
+- 해결 : SSH reverse tunnel 적용
+- 결과 : 외부 서버에서 접근 가능
+
+---
 
 ### 역할
 
-- 웹 풀스택 개발
-- 프론트엔드 (React / TypeScript)
-- 백엔드 API 개발 (Spring Boot)
-- CI/CD 구축 (Docker / Jenkins)
-- 로봇 데이터 수집 및 웹 서비스 연동
+- 웹 풀스택 개발 (Frontend + Backend)
+- 실시간 데이터 처리 API 설계 및 구현
+- MQTT 기반 로봇 통신 연동
+- MJPEG 스트리밍 구조 구현
+- CI/CD 구축 (GitLab → Jenkins → Docker Compose)
+- Nginx 기반 리버스 프록시 및 HTTPS 구성
+
+---
+
+### 성과
+
+- 실시간 안전 관제 시스템 구축
+- 이벤트 → 알림 → 조치까지 자동화 흐름 구현
+- 영상 + 데이터 통합 모니터링 환경 구축
 
 ---
 
